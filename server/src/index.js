@@ -24,7 +24,16 @@ const server = http.createServer(app);
 const socketUtility = require('./utils/socket');
 socketUtility.init(server);
 console.log('Socket.io Initialized');
-app.use(cors());
+app.set('trust proxy', 1); // Trust first proxy (Render/Vercel/Railway)
+
+// Configure CORS
+const corsOptions = {
+  origin: process.env.CLIENT_URL ? process.env.CLIENT_URL.split(',') : '*',
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  credentials: true,
+};
+app.use(cors(corsOptions));
+
 app.use(express.json());
 app.use(morgan('dev'));
 
@@ -58,6 +67,11 @@ app.get('/api/v1/health', (req, res) => {
   });
 });
 
+// Root health check route required by some hosting providers
+app.get('/health', (req, res) => {
+  res.status(200).json({ status: 'ok' });
+});
+
 // Start Background Workers
 const { startCleanupWorker } = require('./workers/reservationCleanup');
 startCleanupWorker();
@@ -65,6 +79,6 @@ console.log('Background workers started (reservation cleanup)');
 
 // Start server
 const PORT = process.env.PORT || 5000;
-server.listen(PORT, () => {
+server.listen(PORT, '0.0.0.0', () => {
   console.log(`Server running on port ${PORT}`);
 });

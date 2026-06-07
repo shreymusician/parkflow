@@ -12,9 +12,9 @@ export const SocketProvider = ({ children }) => {
   useEffect(() => {
     // Only connect if the user is authenticated
     if (user && user.id) {
-      // Connect to the backend (assumes the React proxy maps or we connect directly to :5000)
-      const newSocket = io('http://localhost:5000', {
-        transports: ['websocket'],
+      const SOCKET_URL = import.meta.env.VITE_SOCKET_URL || 'http://localhost:5000';
+      const newSocket = io(SOCKET_URL, {
+        transports: ['websocket', 'polling'],
       });
 
       newSocket.on('connect', () => {

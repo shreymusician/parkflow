@@ -5,9 +5,11 @@ module.exports = {
     const { Server } = require('socket.io');
     io = new Server(httpServer, {
       cors: {
-        origin: '*', // Adjust for production
-        methods: ['GET', 'POST', 'PUT', 'DELETE']
-      }
+        origin: process.env.CLIENT_URL ? process.env.CLIENT_URL.split(',') : '*',
+        methods: ['GET', 'POST', 'PUT', 'DELETE'],
+        credentials: true
+      },
+      transports: ['websocket', 'polling']
     });
 
     io.on('connection', (socket) => {
